@@ -1,0 +1,14 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.curso.ecosistema</groupId>
+  <artifactId>08_ProyectoPerfiles</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <profiles>
+  	<profile>
+  		<id>TestAceptacion</id>
+  		<activation>
+  			<activeByDefault>false</activeByDefault>
+  		</activation>
+  	</profile>
+  </profiles>
+</project>
