@@ -1,9 +1,7 @@
 package com.curso.ecosistema;
 
-public class Servicio {
+import com.curso.ecosistema.dto.Dato;
 
-	public Dato hacerCosas(Dato dato){
-		return new Dato();
-	}
-	
+public interface Servicio {
+	Dato hacerCosas(Dato dato);
 }

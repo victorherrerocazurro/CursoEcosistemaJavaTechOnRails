@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.curso.ecosistema.ServicioImpl;
 import com.curso.ecosistema.dto.Dato;
 
 /**
@@ -27,7 +28,7 @@ public class Controlador extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		Dato dato = null;
+		Dato dato = new ServicioImpl().hacerCosas(new Dato());
 		
 	}
 
