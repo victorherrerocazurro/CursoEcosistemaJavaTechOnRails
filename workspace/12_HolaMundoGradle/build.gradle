@@ -4,10 +4,119 @@
  * This is a general purpose Gradle build.
  * Learn how to create Gradle builds at https://guides.gradle.org/creating-new-gradle-builds/
  */
+ 
+ class GreetingPlugin implements Plugin<Project> {
+	void apply(Project project) {
+		project.task('hello') {
+			doLast {
+				println "Hello from the GreetingPlugin"
+			}
+		}
+	}
+}
 
+class DockerTomcatPluginExtension {
+	String containerName = 'docker-Tomcat'
+	String imageName = 'tomcat:8.5-alpine'
+	String localPort = '8080'
+	String deployDir
+	DockerTomcatPluginExtension(Project project) {
+		deployDir = project.buildDir.getAbsolutePath() + '\\libs'
+	}
+}
+
+//docker run -d --name dockerTomcat --rm -p 8080:8080 -v //c/TECHONRAILS/CursoEcosistemaJavaTechOnRails/workspace/12_HolaMundoGradle/build/libs:/usr/local/tomcat/webapps tomcat:8.5-alpine
+
+class DockerTomcatPlugin implements Plugin<Project> {
+	void apply(Project project) {
+		def extension = project.extensions.create('dockerTomcat', DockerTomcatPluginExtension, project)
+		project.task('stopTomcat', type:Exec) {
+			group 'docker'
+			executable 'docker'
+			args 'stop', extension.containerName
+		}
+		project.task('startTomcat', type:Exec) {
+			group 'docker'
+			executable 'docker'
+			args 'run','-d', '--name', extension.containerName,'--rm','-p',
+			extension.localPort + ':8080', extension.imageName
+			//'-v', extension.deployDir + ':/usr/local/tomcat/webapps',
+		}
+	}
+}
+ 
  apply plugin: 'java'
  apply plugin: 'war'
+ apply from: 'profile-' + profile +'.gradle'
+ apply plugin: 'maven'
+ //apply from: 'plugins.gradle'
+ apply plugin: DockerTomcatPlugin
+ apply plugin: GreetingPlugin
  
+repositories {
+    mavenCentral()
+    maven {
+		url "http://192.168.99.100:8081/nexus/content/repositories/releases/"
+	}
+}
+
+sourceSets {
+	integrationTest {
+		java {
+			compileClasspath += main.output + test.output
+			runtimeClasspath += main.output + test.output
+			srcDir file('src/integration-test/java')
+		}
+		resources.srcDir file('src/integration-test/resources')
+	}
+}
+
+dependencies {
+	// https://mvnrepository.com/artifact/org.springframework/spring-context
+	implementation 'org.springframework:spring-context:5.0.7.RELEASE'
+	
+	// https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
+	providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
+
+    // https://mvnrepository.com/artifact/junit/junit
+	integrationTestCompile group: 'junit', name: 'junit', version: '4.12'    
+}
+
+task integrationTest(type: Test) {
+	group 'verification'
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			repository(url: "http://192.168.99.100:8081/nexus/content/repositories/releases/"){
+				authentication(userName: "admin", password: "admin123")
+			}
+			pom.version = '0.0.1'
+			pom.groupId = 'com.ejemplo.gradle'
+			pom.artifactId = 'miProyecto'
+		}
+	}
+}
+
+/*task startTomcat(type:Exec) {
+	group 'docker'
+	executable 'docker'
+	args 'run','-d', '--name', 'dockerTomcat','--rm','-p',
+	'8080:8080','-v', buildDir.getAbsolutePath() + '\\libs' +
+	':/usr/local/tomcat/webapps', 'tomcat:8.5-alpine'
+}*/
+
+dockerTomcat {
+	containerName = 'dockerTomcat'
+	imageName = 'tomcat:8.5-alpine'
+	localPort = '8080'
+	deployDir = war.archivePath
+}
+
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
  version = '1.0.0'
- 
- println (version)
